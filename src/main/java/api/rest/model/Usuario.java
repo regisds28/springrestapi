@@ -36,7 +36,6 @@ public class Usuario implements UserDetails {
 
 	private String nome;
 
-	@Column(unique = true)
 	private String login;
 	
 	private String senha;
