@@ -26,46 +26,36 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Usuario implements UserDetails {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(generator = "sequence_user", strategy = GenerationType.AUTO)
-	@SequenceGenerator(name = "sequence_user", sequenceName = "user_seq")
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
 	private String nome;
 
+	@Column(unique = true)
 	private String login;
-	
-	private String senha;
-	
-	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<Telefone> telefone;
 
-	@OneToMany(fetch = FetchType.EAGER)	
-	@JoinTable(name = "usuarios_role", uniqueConstraints = @UniqueConstraint(
-				columnNames = {"usuario_id", "role_id"}, 
-				name = "unique_role_user"),
-										   joinColumns = @JoinColumn(
-				name = "usuario_id", 
-				referencedColumnName = "id", 
-				table = "usuario", 
-				unique = false,
-				foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)),
-										   inverseJoinColumns = @JoinColumn(
-				name = "role_id", 
-				referencedColumnName = "id", 
-				table = "role",
-				unique = false,
-				updatable = false,
-				foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
+	private String senha;
+
+	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Telefone> telefone = new ArrayList<Telefone>();
+
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "usuarios_role", uniqueConstraints = @UniqueConstraint(columnNames = { "usuario_id",
+			"role_id" }, name = "unique_role_user"), joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table = "usuario", unique = false, foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id", table = "role", unique = false, updatable = false, foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
 	private List<Role> roles;
 
+	private String token = "";
+
+	@JsonIgnore
 	public Long getId() {
 		return id;
 	}
 
+	@JsonIgnore
 	public void setId(Long id) {
 		this.id = id;
 	}
@@ -86,10 +76,12 @@ public class Usuario implements UserDetails {
 		this.login = login;
 	}
 
+	@JsonIgnore
 	public String getSenha() {
 		return senha;
 	}
 
+	@JsonIgnore
 	public void setSenha(String senha) {
 		this.senha = senha;
 	}
@@ -101,13 +93,23 @@ public class Usuario implements UserDetails {
 	public void setTelefone(List<Telefone> telefone) {
 		this.telefone = telefone;
 	}
-	
+
 	public List<Role> getRoles() {
 		return roles;
 	}
-	
+
 	public void setRoles(List<Role> roles) {
 		this.roles = roles;
+	}
+
+	@JsonIgnore
+	public String getToken() {
+		return token;
+	}
+
+	@JsonIgnore
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 	@Override
@@ -135,7 +137,6 @@ public class Usuario implements UserDetails {
 		return true;
 	}
 
-	
 	@JsonIgnore
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {

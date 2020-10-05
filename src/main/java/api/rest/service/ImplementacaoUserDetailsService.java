@@ -27,6 +27,6 @@ public class ImplementacaoUserDetailsService implements UserDetailsService{
 		}
 		
 		return new User(usuario.getLogin(), usuario.getSenha(), usuario.getAuthorities());
-	}
+	} 
 
 }

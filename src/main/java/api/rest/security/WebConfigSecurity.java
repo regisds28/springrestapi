@@ -2,6 +2,7 @@ package api.rest.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,6 +30,8 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter {
 		.disable().authorizeRequests().antMatchers("/").permitAll()
 		.antMatchers("index").permitAll()
 		
+		.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+		
 		/*redirecionamento de logout*/
 		.anyRequest().authenticated().and().logout().logoutSuccessUrl("/index")
 		
@@ -40,7 +43,7 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter {
 		
 		//filtra demais requisições paraverificar a presença de token jwt no header http
 		.addFilterBefore(new JWTAutenticacaoFilter(), UsernamePasswordAuthenticationFilter.class);
-	}
+	} 
 	
 	
 	

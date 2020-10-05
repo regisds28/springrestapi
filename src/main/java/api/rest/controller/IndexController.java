@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import api.rest.model.Usuario;
+import api.rest.model.UsuarioDTO;
 import api.rest.repository.TelefoneRepository;
 import api.rest.repository.UsuarioRepository;
 
@@ -31,6 +34,8 @@ public class IndexController {
 	private TelefoneRepository telefoneRepository;
 
 	@GetMapping(value = "/", produces = "application/json")
+	@CacheEvict(value = "cacheusuarios", allEntries = true)
+	@CachePut("cacheusuarios")
 	public ResponseEntity<List<Usuario>> init() {
 
 		List<Usuario> list = (List<Usuario>) usuarioRepository.findAll();
@@ -39,11 +44,13 @@ public class IndexController {
 	}
 
 	@GetMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<Usuario> usuario(@PathVariable(value = "id") Long id) {
+	@CacheEvict(value = "cacheusuarios", allEntries = true)
+	@CachePut("cacheusuarios")
+	public ResponseEntity<UsuarioDTO> usuario(@PathVariable(value = "id") Long id) {
 
 		Optional<Usuario> usuario = usuarioRepository.findById(id);
 
-		return new ResponseEntity<Usuario>(usuario.get(), HttpStatus.OK);
+		return new ResponseEntity<UsuarioDTO>(new UsuarioDTO(usuario.get()), HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/{id}/codVenda/{venda}", produces = "application/json")
@@ -79,9 +86,9 @@ public class IndexController {
 			usuario.getTelefone().get(pos).setUsuario(usuario);
 		}
 
-		Usuario usuarioTemp = usuarioRepository.findByLogin(usuario.getSenha());
+		Usuario usuarioTemp = usuarioRepository.findByLogin(usuario.getLogin());
 		
-		if(usuarioTemp.getSenha().equals(usuario.getLogin())){
+		if(!usuarioTemp.getSenha().equals(usuario.getSenha())){
 			String senhaCriptografada = new BCryptPasswordEncoder().encode(usuario.getSenha());
 			usuario.setSenha(senhaCriptografada);
 		}
